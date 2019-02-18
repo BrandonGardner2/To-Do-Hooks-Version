@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 const Todo = props => {
   return (
@@ -11,6 +12,11 @@ const Todo = props => {
       <p className="todoItem">{props.todo.task}</p>
     </div>
   );
+};
+
+Todo.propTypes = {
+  todo: PropTypes.object.isRequired,
+  handleClickToDo: PropTypes.func.isRequired
 };
 
 export default Todo;

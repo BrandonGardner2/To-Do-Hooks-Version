@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 const ToDoForm = props => {
   return (
@@ -13,6 +14,12 @@ const ToDoForm = props => {
       <button className="btn addBtn">Add Todo</button>
     </form>
   );
+};
+
+ToDoForm.propTypes = {
+  handleAddToDo: PropTypes.func.isRequired,
+  handleChange: PropTypes.func.isRequired,
+  task: PropTypes.string.isRequired
 };
 
 export default ToDoForm;
