@@ -1,91 +1,57 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./index.css";
 
 import TodoForm from "./components/TodoComponents/TodoForm";
 import TodoList from "./components/TodoComponents/TodoList";
 
-const init = [
-  {
-    task: "Organize Garage",
-    id: 1528817077286,
-    completed: false
-  },
-  {
-    task: "Bake Cookies",
-    id: 1528817084358,
-    completed: false
-  }
-];
-
-class App extends React.Component {
-  state = {
-    todos: [],
-    task: ""
+const App = () => {
+  const saveToLocalStorage = () => {
+    localStorage.setItem("todos", JSON.stringify(todos));
   };
-
-  componentDidMount() {
-    this.hydrateState();
-
-    window.addEventListener("beforeunload", this.saveToLocalStorage);
-  }
-
-  componentWillUnmount() {
-    this.saveToLocalStorage();
-
-    window.removeEventListener("beforeunload", this.saveToLocalStorage);
-  }
-
-  saveToLocalStorage = () => {
-    localStorage.setItem("todos", JSON.stringify(this.state.todos));
-  };
-
-  hydrateState = () => {
+  const hydrateState = () => {
+    let value;
     if (localStorage.hasOwnProperty("todos")) {
-      let value = localStorage.getItem("todos");
-      console.log(value);
+      value = localStorage.getItem("todos");
       try {
         value = JSON.parse(value);
-        this.setState({
-          todos: value
-        });
       } catch (e) {
-        this.setState({
-          todos: init
-        });
+        value = [];
       }
     }
+
+    return value;
+  };
+  const [todos, setTodos] = useState(hydrateState());
+  useEffect(() => {
+    saveToLocalStorage();
+    window.removeEventListener("beforeunload", saveToLocalStorage);
+  });
+
+  const [task, setTask] = useState("");
+  const clearForm = () => {
+    setTask("");
   };
 
-  clearForm = () => {
-    this.setState({
-      task: ""
-    });
+  const handleChange = e => {
+    setTask(e.target.value);
   };
 
-  handleChange = e => {
-    this.setState({
-      [e.target.name]: e.target.value
-    });
-  };
-
-  handleAddToDo = e => {
+  const handleAddToDo = e => {
     e.preventDefault();
-    if (this.state.task !== "") {
+    if (task !== "") {
       const newTodo = {
-        task: this.state.task,
+        task: task,
         id: Date.now(),
         completed: false
       };
-      this.setState({
-        todos: [...this.state.todos, newTodo]
-      });
-      this.clearForm();
+      setTodos([...todos, newTodo]);
+      clearForm();
     }
   };
 
-  handleClickToDo = (e, id) => {
+  const handleClickToDo = (e, id) => {
     e.target.parentElement.classList.toggle("complete");
-    const todos = this.state.todos.map(todo => {
+    const updatedTodos = todos.map(todo => {
       if (todo.id === id) {
         todo.completed = !todo.completed;
         return todo;
@@ -93,47 +59,40 @@ class App extends React.Component {
         return todo;
       }
     });
-    this.setState({ todos });
+    setTodos(updatedTodos);
   };
 
-  handleCompleteTasks = () => {
-    this.setState({
-      todos: this.state.todos.filter(todo => !todo.completed)
-    });
+  const handleCompleteTasks = () => {
+    setTodos(todos.filter(todo => !todo.completed));
   };
 
-  render() {
-    return (
-      <div className="appContainer">
-        <h2>To Do Application</h2>
+  return (
+    <div className="appContainer">
+      <h2>To Do Application</h2>
 
-        <div className="container">
-          <section className="ctas">
-            <TodoForm
-              handleAddToDo={this.handleAddToDo}
-              handleChange={this.handleChange}
-              task={this.state.task}
-            />
+      <div className="container">
+        <section className="ctas">
+          <TodoForm
+            handleAddToDo={handleAddToDo}
+            handleChange={handleChange}
+            task={task}
+          />
 
-            <button
-              className="btn completeBtn"
-              onClick={this.handleCompleteTasks}
-            >
-              Complete Tasks
-            </button>
-          </section>
+          <button className="btn completeBtn" onClick={handleCompleteTasks}>
+            Complete Tasks
+          </button>
+        </section>
 
-          <section className="list">
-            <TodoList
-              handleClickToDo={this.handleClickToDo}
-              handleCompleteTasks={this.handleCompleteTasks}
-              todos={this.state.todos}
-            />
-          </section>
-        </div>
+        <section className="list">
+          <TodoList
+            handleClickToDo={handleClickToDo}
+            handleCompleteTasks={handleCompleteTasks}
+            todos={todos}
+          />
+        </section>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export default App;
